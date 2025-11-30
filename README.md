@@ -95,5 +95,4 @@ Open the Metrics window to view:
 </div>
 
 ## License
-
-This project is open source and available under the MIT License.
+This project is open source and available under the GNU General Public License (GPL).
