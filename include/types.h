@@ -46,8 +46,9 @@ typedef enum {
     RR = 2,
     PRIORITY_P = 3,
     PRIORITY = 4,
-    MULTILEVEL = 5,
-    SRT = 6
+    MULTILEVELS = 5,
+    MULTILEVELD= 6,
+    SRT = 7
 } Algorithm;
 
 typedef enum {

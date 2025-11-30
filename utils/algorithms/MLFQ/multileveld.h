@@ -1,5 +1,5 @@
-#ifndef MULTILEVEL_H
-#define MULTILEVEL_H
+#ifndef MULTILEVELD_H
+#define MULTILEVELD_H
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -10,6 +10,6 @@
 #include "../useful/useful.h"
 #include "../../gannt/format.h"
 #include "../../../include/algorithms.h"
-
-ExecutedTask *get_multilevel_output(int quantum, process *process_array, int process_array_size, int *executed_tasks_size);
+#include "../../queues/fifo/queuef.h"
+ExecutedTask *get_multileveld_output( process *process_array, int process_array_size, int *executed_tasks_size);
 #endif

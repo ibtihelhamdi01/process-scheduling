@@ -1,6 +1,5 @@
 
 #include "rr.h"
-
 ExecutedTask *get_round_robin_output(int quantum, process *process_array, int process_array_size, int *tasks_size)
 {
     *tasks_size = 0;
@@ -99,7 +98,7 @@ ExecutedTask *rr_wrapper(process *proc, int proc_count, int *executed_count, opt
     return get_round_robin_output(ops.quantum, proc, proc_count, executed_count);
 }
 
-// Plugin info uses wrapper
+
 AlgorithmInfo* get_algorithm_info_plugin(void) {
     static AlgorithmInfo info = {
         .name = "RR",
