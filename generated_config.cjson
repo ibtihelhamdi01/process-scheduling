@@ -1,0 +1,61 @@
+// ================================================
+// CONFIGURATION FILE - PROCESS SCHEDULER
+// Format: JSONC (JSON with C-style comments)
+// ================================================
+
+// Global scheduler configuration options
+{
+  "options": {
+    // Quantum time for Round Robin algorithm
+    // Range: 1 to 10 time units
+    "quantum": 3,
+
+    // Maximum number of processes to generate
+    // Format: "min-max" (e.g., "1-10" for 1 to 10 processes)
+    "max_proc": "1-10",
+
+    // Execution time (burst time) range
+    // Each process gets a random execution time in this range
+    "max_exec": "1-2",
+
+    // Priority range (1 = highest priority, 10 = lowest)
+    "max_priority": "1-10",
+
+    // Arrival time range
+    // When processes arrive in the system
+    "max_arrival": "1-10"
+  },
+
+  // List of generated processes
+  // Each process has 4 attributes:
+  // - name: Process identifier (p1, p2, ...)
+  // - arrived_at: Time when process arrives
+  // - execution_time: CPU burst time required
+  // - priority: Priority level (1-10)
+  "process": [
+    {
+      // Process p1
+      "name": "p1",
+      "arrived_at": 1,  // Arrival time
+      "execution_time": 2,  // Burst time
+      "priority": 10  // Priority level
+    },
+
+    {
+      // Process p2
+      "name": "p2",
+      "arrived_at": 9,  // Arrival time
+      "execution_time": 2,  // Burst time
+      "priority": 1  // Priority level
+    },
+
+    {
+      // Process p3
+      "name": "p3",
+      "arrived_at": 9,  // Arrival time
+      "execution_time": 1,  // Burst time
+      "priority": 9  // Priority level
+    }
+  ]
+}
+
