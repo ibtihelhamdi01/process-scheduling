@@ -19,33 +19,33 @@
 #include "./utils/metrics/metrics.h"
 #include "./utils/config/write/write.h"
 #include "./utils/config/read/read.h"
+
 void load_algorithm(Algorithm algo_id);
 void show_message_box_(const gchar *message);
 void close_settings_window(void);
 void show_about_dialog(void);
-const char *config_filename = "generated_config.json";
+
+const char *config_filename = "generated_config.cjson";
 int config_file_size = 0;
 int executed_tasks_size = 0;
 ExecutedTask tasks[100];
-process *proc_head;
+process *proc_head = NULL;
 GtkWidget *window, *drawing_area, *vbox, *dialog, *metrics_window, *metrics_table, *open_metrics, *settings_window, *view_settings, *max_exec_input, *max_proc_input, *max_arrival_input, *max_priority_input;
 char *exec_range = "1-2";
+
 char *max_proc_range = "1-10";
 char *priority_range = "1-10";
 char *arrival_range = "1-10";
-
 cairo_surface_t *global_surface = NULL;
 options ops;
 bool is_metrics_open = false;
 
 Algorithm current_algorithm = FIFO;
 
-
 GtkWidget *header_box, *algo_btn_box, *control_btn_box;
 GtkWidget **algo_buttons = NULL;
 GtkWidget *status_bar;
 GtkCssProvider *css_provider;
-
 
 int algo_count = 0;
 
@@ -61,21 +61,21 @@ char *concat(const char *s1, const char *s2) {
 }
 
 void on_generate_config_clicked(GtkWidget *button, gpointer user_data) {
-    generate_config_file("generated_config.json", ops, max_proc_range, exec_range, priority_range, arrival_range);
+    generate_config_file(config_filename, ops, max_proc_range, exec_range, priority_range, arrival_range);
     
     if (proc_head != NULL) {
         free(proc_head);
+        proc_head = NULL;
     }
-    proc_head = read_config_file("generated_config.json", &config_file_size, &ops);
+    
+    proc_head = read_config_file(config_filename, &config_file_size, &ops);
     
     if (proc_head != NULL) {
-        
         AlgorithmInfo *algo_info = get_algorithm_by_id(current_algorithm);
         if (algo_info != NULL) {
             load_algorithm(current_algorithm);
             show_message_box_("Config file generated and loaded successfully!");
         } else {
-            
             if (algo_count > 0) {
                 AlgorithmInfo *first_algo = get_algorithm_info(0);
                 current_algorithm = first_algo->id;
@@ -110,7 +110,6 @@ void load_algorithm(Algorithm algo_id) {
     if (algo_info == NULL) {
         printf("Algorithm %d not found in registry!\n", algo_id);
         
-        
         if (algo_count > 0) {
             AlgorithmInfo *first_algo = get_algorithm_info(0);
             current_algorithm = first_algo->id;
@@ -135,7 +134,6 @@ void load_algorithm(Algorithm algo_id) {
         free(task);
     }
 
-    
     char window_title[100];
     snprintf(window_title, sizeof(window_title), "Process Scheduler (%s)", algo_info->display_name);
     gtk_window_set_title(GTK_WINDOW(window), window_title);
@@ -266,22 +264,60 @@ bool match_regex(const char *str) {
 }
 
 bool save_settings(GtkWidget *btn, gpointer user_data) {
-    char *max_exec_input_txt = gtk_entry_get_text(GTK_ENTRY(max_exec_input));
-    char *max_proc_input_txt = gtk_entry_get_text(GTK_ENTRY(max_proc_input));
-    char *max_priority_input_txt = gtk_entry_get_text(GTK_ENTRY(max_priority_input));
-    char *max_arrival_input_txt = gtk_entry_get_text(GTK_ENTRY(max_arrival_input));
+    const char *max_exec_input_txt = gtk_entry_get_text(GTK_ENTRY(max_exec_input));
+    const char *max_proc_input_txt = gtk_entry_get_text(GTK_ENTRY(max_proc_input));
+    const char *max_priority_input_txt = gtk_entry_get_text(GTK_ENTRY(max_priority_input));
+    const char *max_arrival_input_txt = gtk_entry_get_text(GTK_ENTRY(max_arrival_input));
 
-    if (match_regex(max_exec_input_txt) && match_regex(max_proc_input_txt) && match_regex(max_priority_input_txt) && match_regex(max_arrival_input_txt)) {
-        exec_range = max_exec_input_txt;
-        max_proc_range = max_proc_input_txt;
-        priority_range = max_priority_input_txt;
-        arrival_range = max_arrival_input_txt;
+    if (match_regex(max_exec_input_txt) && match_regex(max_proc_input_txt) && 
+        match_regex(max_priority_input_txt) && match_regex(max_arrival_input_txt)) {
         
-        if (!modify_ranges(config_filename, max_proc_range, exec_range, priority_range, arrival_range))
+       
+        char *new_exec_range = strdup(max_exec_input_txt);
+        char *new_proc_range = strdup(max_proc_input_txt);
+        char *new_priority_range = strdup(max_priority_input_txt);
+        char *new_arrival_range = strdup(max_arrival_input_txt);
+        
+        if (!new_exec_range || !new_proc_range || !new_priority_range || !new_arrival_range) {
+            show_message_box_("Memory allocation failed!");
             return FALSE;
-            
-        load_settings(config_filename, &max_proc_range, &exec_range, &priority_range, &arrival_range);
+        }
+        
+        
+        free(exec_range); exec_range = new_exec_range;
+        free(max_proc_range); max_proc_range = new_proc_range;
+        free(priority_range); priority_range = new_priority_range;
+        free(arrival_range); arrival_range = new_arrival_range;
+        
+        if (!modify_ranges(config_filename, max_proc_range, exec_range, priority_range, arrival_range)) {
+            show_message_box_("Failed to modify ranges in config file!");
+            return FALSE;
+        }
+        
+        
+        char *old_exec = exec_range;
+        char *old_proc = max_proc_range;
+        char *old_priority = priority_range;
+        char *old_arrival = arrival_range;
+        
+        if (!load_settings(config_filename, &max_proc_range, &exec_range, &priority_range, &arrival_range)) {
+            show_message_box_("Failed to reload settings!");
+            return FALSE;
+        }
+        
+        
+        if (old_exec != exec_range && old_exec != NULL) free(old_exec);
+        if (old_proc != max_proc_range && old_proc != NULL) free(old_proc);
+        if (old_priority != priority_range && old_priority != NULL) free(old_priority);
+        if (old_arrival != arrival_range && old_arrival != NULL) free(old_arrival);
+        
         generate_config_file(config_filename, ops, max_proc_range, exec_range, priority_range, arrival_range);
+        
+        if (proc_head != NULL) {
+            free(proc_head);
+            proc_head = NULL;
+        }
+        
         proc_head = read_config_file(config_filename, &config_file_size, &ops);
         
         if (proc_head != NULL) {
@@ -306,8 +342,12 @@ void on_slider_value_changed(GtkWidget *slider, gpointer user_data) {
     gchar *label_text = g_strdup_printf("Current Quantum: %d", value);
     modify_quantum_val(config_filename, value);
 
-    proc_head = read_config_file(config_filename, &config_file_size, &ops);
+    if (proc_head != NULL) {
+        free(proc_head);
+        proc_head = NULL;
+    }
     
+    proc_head = read_config_file(config_filename, &config_file_size, &ops);
     
     AlgorithmInfo *algo_info = get_algorithm_by_id(current_algorithm);
     if (algo_info != NULL && algo_info->requires_quantum) {
@@ -336,12 +376,10 @@ void show_settings_window() {
     gtk_container_set_border_width(GTK_CONTAINER(main_box), 15);
     gtk_container_add(GTK_CONTAINER(settings_window), main_box);
 
-    
     GtkWidget *header_label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(header_label), "<span size='x-large' weight='bold'>⚙️ Settings</span>");
     gtk_box_pack_start(GTK_BOX(main_box), header_label, FALSE, FALSE, 0);
 
-    
     GtkWidget *rr_frame = gtk_frame_new("Round Robin Quantum");
     gtk_box_pack_start(GTK_BOX(main_box), rr_frame, FALSE, FALSE, 10);
     
@@ -359,7 +397,6 @@ void show_settings_window() {
     gtk_box_pack_start(GTK_BOX(rr_box), slider, FALSE, FALSE, 0);
     g_signal_connect(slider, "value-changed", G_CALLBACK(on_slider_value_changed), quantum_label);
 
-    
     GtkWidget *gen_frame = gtk_frame_new("Process Generation Settings");
     gtk_box_pack_start(GTK_BOX(main_box), gen_frame, TRUE, TRUE, 10);
     
@@ -367,47 +404,54 @@ void show_settings_window() {
     gtk_container_set_border_width(GTK_CONTAINER(gen_box), 10);
     gtk_container_add(GTK_CONTAINER(gen_frame), gen_box);
 
-    
     GtkWidget *proc_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
     GtkWidget *proc_label = gtk_label_new("Max processes:");
     gtk_widget_set_size_request(proc_label, 120, -1);
     max_proc_input = gtk_entry_new();
+    if (max_proc_range != NULL) {
+        gtk_entry_set_text(GTK_ENTRY(max_proc_input), max_proc_range);
+    }
     gtk_entry_set_placeholder_text(GTK_ENTRY(max_proc_input), "Ex: 2-10");
     gtk_box_pack_start(GTK_BOX(proc_box), proc_label, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(proc_box), max_proc_input, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(gen_box), proc_box, FALSE, FALSE, 5);
 
-   
     GtkWidget *exec_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
     GtkWidget *exec_label = gtk_label_new("Burst time limit:");
     gtk_widget_set_size_request(exec_label, 120, -1);
     max_exec_input = gtk_entry_new();
+    if (exec_range != NULL) {
+        gtk_entry_set_text(GTK_ENTRY(max_exec_input), exec_range);
+    }
     gtk_entry_set_placeholder_text(GTK_ENTRY(max_exec_input), "Ex: 3-10");
     gtk_box_pack_start(GTK_BOX(exec_box), exec_label, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(exec_box), max_exec_input, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(gen_box), exec_box, FALSE, FALSE, 5);
 
-   
     GtkWidget *priority_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
     GtkWidget *priority_label = gtk_label_new("Priority limit:");
     gtk_widget_set_size_request(priority_label, 120, -1);
     max_priority_input = gtk_entry_new();
+    if (priority_range != NULL) {
+        gtk_entry_set_text(GTK_ENTRY(max_priority_input), priority_range);
+    }
     gtk_entry_set_placeholder_text(GTK_ENTRY(max_priority_input), "Ex: 3-10");
     gtk_box_pack_start(GTK_BOX(priority_box), priority_label, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(priority_box), max_priority_input, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(gen_box), priority_box, FALSE, FALSE, 5);
 
-    
     GtkWidget *arrival_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
     GtkWidget *arrival_label = gtk_label_new("Arrival limit:");
     gtk_widget_set_size_request(arrival_label, 120, -1);
     max_arrival_input = gtk_entry_new();
+    if (arrival_range != NULL) {
+        gtk_entry_set_text(GTK_ENTRY(max_arrival_input), arrival_range);
+    }
     gtk_entry_set_placeholder_text(GTK_ENTRY(max_arrival_input), "Ex: 3-10");
     gtk_box_pack_start(GTK_BOX(arrival_box), arrival_label, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(arrival_box), max_arrival_input, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(gen_box), arrival_box, FALSE, FALSE, 5);
 
-    
     GtkWidget *save_btn = gtk_button_new_with_label("💾 Save & Generate");
     g_signal_connect(save_btn, "clicked", G_CALLBACK(save_settings), NULL);
     gtk_box_pack_start(GTK_BOX(main_box), save_btn, FALSE, FALSE, 10);
@@ -465,11 +509,9 @@ void on_algo_button_clicked(GtkWidget *button, gpointer user_data) {
         return;
     }
     
-    
     for (int i = 0; i < algo_count; i++) {
         gtk_style_context_remove_class(gtk_widget_get_style_context(algo_buttons[i]), "active-algo");
     }
-    
     
     gtk_style_context_add_class(gtk_widget_get_style_context(button), "active-algo");
     
@@ -640,12 +682,10 @@ GtkWidget* create_algo_panel() {
     gtk_container_set_border_width(GTK_CONTAINER(box), 10);
     gtk_container_add(GTK_CONTAINER(frame), box);
     
-    
     if (algo_buttons != NULL) {
         free(algo_buttons);
         algo_buttons = NULL;
     }
-    
     
     algo_count = get_algorithm_count();
     algo_buttons = malloc(sizeof(GtkWidget*) * algo_count);
@@ -721,9 +761,9 @@ void show_about_dialog() {
     "nada mechergui", 
     "khalil laouini",
     NULL  
-};
-gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(dialog), authors);
-gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "https://github.com/ibtihelhamdi01/process-scheduling");
+    };
+    gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(dialog), authors);
+    gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "https://github.com/ibtihelhamdi01/process-scheduling");
 
     gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
@@ -731,30 +771,64 @@ gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "https://github.com/ibtih
 
 int main(int argc, char *argv[]) {
     srand(time(NULL));
+    exec_range = strdup("1-2");
+    max_proc_range = strdup("1-10");
+    priority_range = strdup("1-10");
+    arrival_range = strdup("1-10");
+    
+    if (!exec_range || !max_proc_range || !priority_range || !arrival_range) {
+        printf("Memory allocation failed\n");
+        exit(1);
+    }
 
     if (argc < 2) {
-        printf("Please input the config file.\n");
+        printf("Usage: %s [config_file|G]\n", argv[0]);
+        printf("  G - Generate new config file with comments (.cjson format) and EXIT\n");
+        printf("  filename.cjson - Load existing config file and open GUI\n");
+        printf("\nExamples:\n");
+        printf("  %s G                    # Generate config and exit\n", argv[0]);
+        printf("  %s generated_config.cjson # Load config and open GUI\n", argv[0]);
+        
+        free(exec_range);
+        free(max_proc_range);
+        free(priority_range);
+        free(arrival_range);
         exit(0);
-    } else {
-        ops.quantum = 3;
+    }
 
-        if (strcmp(argv[1], "G") == 0 || strcmp(argv[1], "g") == 0) {
-            config_filename = "generated_config.json";
-            generate_config_file(config_filename, ops, max_proc_range, exec_range, priority_range, arrival_range);
-            return 0;
-        } else {
-            config_filename = argv[1];
-        }
+    ops.quantum = 3;
 
-        proc_head = read_config_file(config_filename, &config_file_size, &ops);
-        if (proc_head == NULL) {
-            exit(0);
-        }
-        load_settings(config_filename, &max_proc_range, &exec_range, &priority_range, &arrival_range);
+    if (strcmp(argv[1], "G") == 0 || strcmp(argv[1], "g") == 0) {
+      
+        const char* filename = "generated_config.cjson";
+        generate_config_with_comments(filename, ops, max_proc_range, exec_range, priority_range, arrival_range);
+        
+       
+        free(exec_range);
+        free(max_proc_range);
+        free(priority_range);
+        free(arrival_range);
+        exit(0);
+    }
+    
+   
+    config_filename = argv[1];
+    proc_head = read_config_file(config_filename, &config_file_size, &ops);
+    if (proc_head == NULL) {
+        printf("Failed to parse config file: %s\n", config_filename);
+        free(exec_range);
+        free(max_proc_range);
+        free(priority_range);
+        free(arrival_range);
+        exit(0);
+    }
+    
+    
+    if (!load_settings(config_filename, &max_proc_range, &exec_range, &priority_range, &arrival_range)) {
+        printf("Failed to load settings from config file. Using defaults.\n");
     }
 
     gtk_init(&argc, &argv);
-
     
     register_algorithms();
     
@@ -768,9 +842,13 @@ int main(int argc, char *argv[]) {
     if (algo_count == 0) {
         printf("Error: No scheduling algorithms registered!\n");
         printf("Check that algorithm implementation files are included in the build.\n");
+        
+        free(exec_range);
+        free(max_proc_range);
+        free(priority_range);
+        free(arrival_range);
         return -1;
     }
-
     
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(window), "Process Scheduler");
@@ -778,42 +856,33 @@ int main(int argc, char *argv[]) {
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
     g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
-    
     apply_css_styles();
 
-    
     GtkWidget *main_grid = gtk_grid_new();
     gtk_container_add(GTK_CONTAINER(window), main_grid);
 
-    
     header_box = create_modern_header();
     gtk_grid_attach(GTK_GRID(main_grid), header_box, 0, 0, 2, 1);
 
-    
     GtkWidget *sidebar = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     gtk_widget_set_size_request(sidebar, 300, -1);
     gtk_grid_attach(GTK_GRID(main_grid), sidebar, 0, 1, 1, 1);
 
-   
     GtkWidget *algo_panel = create_algo_panel();
     gtk_box_pack_start(GTK_BOX(sidebar), algo_panel, FALSE, FALSE, 0);
 
-    
     GtkWidget *control_panel = create_control_panel();
     gtk_box_pack_start(GTK_BOX(sidebar), control_panel, FALSE, FALSE, 0);
 
-    
     drawing_area = gtk_drawing_area_new();
     gtk_widget_set_hexpand(drawing_area, TRUE);
     gtk_widget_set_vexpand(drawing_area, TRUE);
     g_signal_connect(G_OBJECT(drawing_area), "draw", G_CALLBACK(on_draw_event_modern), NULL);
     gtk_grid_attach(GTK_GRID(main_grid), drawing_area, 1, 1, 1, 1);
 
-    
     status_bar = gtk_statusbar_new();
     gtk_grid_attach(GTK_GRID(main_grid), status_bar, 0, 2, 2, 1);
 
-    
     load_algorithm(current_algorithm);
 
     gtk_widget_show_all(window);
@@ -821,7 +890,7 @@ int main(int argc, char *argv[]) {
 
     gtk_main();
     
-   
+    
     if (proc_head != NULL) {
         free(proc_head);
     }
@@ -833,6 +902,11 @@ int main(int argc, char *argv[]) {
     if (css_provider != NULL) {
         g_object_unref(css_provider);
     }
+    
+    free(exec_range);
+    free(max_proc_range);
+    free(priority_range);
+    free(arrival_range);
       
     free_algorithm_registry();
     return 0;
