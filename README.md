@@ -45,11 +45,11 @@ Generate the configuration file
 ```bash
 scheduler g
 ```
-This will create a file named generated_config.json.
+This will create a file named generated_config.cjson.
 
 Run the simulator
 ```bash
-scheduler generated_config.json
+scheduler generated_config.cjson
 ```
 ## Usage
 ### Main Interface
