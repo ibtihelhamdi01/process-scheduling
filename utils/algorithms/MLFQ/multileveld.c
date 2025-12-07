@@ -90,13 +90,13 @@ ExecutedTask *get_multileveld_output(process *process_array, int process_count, 
         enqueue_new_arrivals(queues, process_array, process_count, current_time, added, wait_time);
 
         for (int p = 1; p < levels; ++p) {
-            int original_size = get_queue_size(queues[p]);  // ✅ De useful.c
+            int original_size = get_queue_size(queues[p]);  
 
             for (int k = 0; k < original_size; ++k) {
                 if (is_queue_empty(queues[p])) break;
 
                 process tmp = remove_from_queue(queues[p]);
-                int idx_tmp = find_process_by_name(process_array, process_count, tmp.name);  // ✅ De useful.c
+                int idx_tmp = find_process_by_name(process_array, process_count, tmp.name);  
 
                 if (idx_tmp >= 0 && wait_time[idx_tmp] >= AGING_THRESHOLD) {
                     // Promotion vers niveau supérieur
@@ -119,7 +119,7 @@ ExecutedTask *get_multileveld_output(process *process_array, int process_count, 
         }
 
         if (lvl == -1) {
-            int next_arrival = get_next_arrival_time_in_queue(process_array, process_count, current_time, added);  // ✅ De useful.c
+            int next_arrival = get_next_arrival_time_in_queue(process_array, process_count, current_time, added);  
 
             if (next_arrival < INT_MAX) {
                 current_time = next_arrival;
@@ -130,7 +130,7 @@ ExecutedTask *get_multileveld_output(process *process_array, int process_count, 
         }
 
         process running = remove_from_queue(queues[lvl]);
-        int idx = find_process_by_name(process_array, process_count, running.name);  // ✅ De useful.c
+        int idx = find_process_by_name(process_array, process_count, running.name);  
         if (idx < 0) continue;
 
         int quantum = BASE_QUANTUM << lvl;  // 2, 4, 8, 16...
