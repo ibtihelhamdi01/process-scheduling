@@ -70,21 +70,22 @@ $(BUILD_DIR)/%.c.o: %.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 
+# ✅ CORRECTION: Ajout de $(CFLAGS_SHARED) pour -fPIC
 $(BUILD_DIR)/utils/queues/fifo/queuef.c.o: utils/queues/fifo/queuef.c
 	@mkdir -p $(dir $@)
-	$(CC) $(ALGO_CPPFLAGS) $(CFLAGS) -c $< -o $@
+	$(CC) $(ALGO_CPPFLAGS) $(CFLAGS) $(CFLAGS_SHARED) -c $< -o $@
 
 $(BUILD_DIR)/utils/queues/priority/priority_queue.c.o: utils/queues/priority/priority_queue.c
 	@mkdir -p $(dir $@)
-	$(CC) $(ALGO_CPPFLAGS) $(CFLAGS) -c $< -o $@
+	$(CC) $(ALGO_CPPFLAGS) $(CFLAGS) $(CFLAGS_SHARED) -c $< -o $@
 
 $(BUILD_DIR)/utils/gannt/format.c.o: utils/gannt/format.c
 	@mkdir -p $(dir $@)
-	$(CC) $(ALGO_CPPFLAGS) $(CFLAGS) -c $< -o $@
+	$(CC) $(ALGO_CPPFLAGS) $(CFLAGS) $(CFLAGS_SHARED) -c $< -o $@
 
 $(BUILD_DIR)/utils/algorithms/useful/useful.c.o: utils/algorithms/useful/useful.c
 	@mkdir -p $(dir $@)
-	$(CC) $(ALGO_CPPFLAGS) $(CFLAGS) -c $< -o $@
+	$(CC) $(ALGO_CPPFLAGS) $(CFLAGS) $(CFLAGS_SHARED) -c $< -o $@
 
 
 $(BUILD_DIR)/algorithms/%.so: $(UTIL_OBJS)

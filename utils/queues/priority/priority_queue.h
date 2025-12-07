@@ -9,16 +9,17 @@
 
 #include "../../../include/types.h"
 
-typedef struct Node
-{
+
+typedef struct Node {
     process process;
     struct Node *next;
 } Node;
 
-typedef struct
-{
+typedef struct {
     Node *front;
+    int size;  // <-- Compteur d’éléments
 } priority_queue;
+int queue_size(priority_queue *pq);
 
 priority_queue *init_priority_queue();
 void print_queue(priority_queue *pq, int current_time);

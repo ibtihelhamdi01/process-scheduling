@@ -529,7 +529,8 @@ static gboolean on_draw_event_modern(GtkWidget *widget, cairo_t *cr, gpointer da
     if (executed_tasks_size == 0) return FALSE;
     
     double bar_height = height / (double)(executed_tasks_size + 1);
-    double bar_width = width / (double)tasks[executed_tasks_size - 1].finish;
+    double right_margin = width * 0.05; // 5% de largeur totale
+    double bar_width = (width - right_margin) / (double)tasks[executed_tasks_size - 1].finish;
     
     cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
     cairo_set_line_width(cr, 2.0);
