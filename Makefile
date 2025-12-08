@@ -70,7 +70,6 @@ $(BUILD_DIR)/%.c.o: %.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 
-# ✅ CORRECTION: Ajout de $(CFLAGS_SHARED) pour -fPIC
 $(BUILD_DIR)/utils/queues/fifo/queuef.c.o: utils/queues/fifo/queuef.c
 	@mkdir -p $(dir $@)
 	$(CC) $(ALGO_CPPFLAGS) $(CFLAGS) $(CFLAGS_SHARED) -c $< -o $@
