@@ -1,6 +1,8 @@
 
 TARGET_EXEC := final_program
 BUILD_DIR := ./build
+INSTALL_DIR := /usr/local/bin
+ALGORITHMS_INSTALL_DIR := /usr/local/lib/algorithms
 SRC_DIRS := ./
 
 SRCS := $(shell find $(SRC_DIRS) -name '*.c' \
