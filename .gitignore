@@ -53,3 +53,6 @@ dkms.conf
 
 # debug information files
 *.dwo
+generated_config.cjson
+output.png
+build/
