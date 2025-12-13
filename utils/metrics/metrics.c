@@ -3,7 +3,7 @@
 
 int get_rotation_time(const char *process_name, ExecutedTask *executed, int executed_size)
 {
-    int result = 0;
+    
     int finish = 0;
     int arrival_time = 0;
     for (int i = 0; i < executed_size; i++)

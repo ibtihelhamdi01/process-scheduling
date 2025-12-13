@@ -5,31 +5,19 @@
 #define INITIAL_TASK_CAP 2000
 #define MAX_SIMULATION_TIME 100000
 
-static void enqueue_new_arrivals(proc_queue **queues, process *process_array,
-                                  int process_count, int current_time,
-                                  int *added, int *wait_time) {
-    for (int i = 0; i < process_count; ++i) {
-        if (!added[i] && process_array[i].arrived_at == current_time) {
-            add_to_queue(queues[process_array[i].priority], process_array[i]);
-            added[i] = 1;
-            wait_time[i] = 0;
-        }
-    }
-}
-
 ExecutedTask *get_multileveld_output(process *process_array, int process_count, int *tasks_size)
 {
     *tasks_size = 0;
     if (process_count == 0) return NULL;
 
-    // Déterminer le nombre de niveaux basé sur la priorité maximale
+    
     int max_priority = 0;
     for (int i = 0; i < process_count; ++i)
         if (process_array[i].priority > max_priority)
             max_priority = process_array[i].priority;
     int levels = max_priority + 1;
 
-    // Allouer les files FIFO (une par niveau de priorité)
+    
     proc_queue **queues = malloc(sizeof(proc_queue *) * levels);
     if (queues == NULL) {
         fprintf(stderr, "ERREUR: échec d'allocation mémoire pour les files\n");
@@ -82,13 +70,8 @@ ExecutedTask *get_multileveld_output(process *process_array, int process_count, 
 
     while (finished < process_count) {
 
-        if (current_time > MAX_SIMULATION_TIME) {
-            fprintf(stderr, "ERREUR: Boucle infinie détectée (temps > %d)\n", MAX_SIMULATION_TIME);
-            break;
-        }
-
         enqueue_new_arrivals(queues, process_array, process_count, current_time, added, wait_time);
-
+        
         for (int p = 1; p < levels; ++p) {
             int original_size = get_queue_size(queues[p]);  
 
@@ -99,12 +82,11 @@ ExecutedTask *get_multileveld_output(process *process_array, int process_count, 
                 int idx_tmp = find_process_by_name(process_array, process_count, tmp.name);  
 
                 if (idx_tmp >= 0 && wait_time[idx_tmp] >= AGING_THRESHOLD) {
-                    // Promotion vers niveau supérieur
+                    
                     int target_level = (p > 0) ? (p - 1) : 0;
                     add_to_queue(queues[target_level], tmp);
                     wait_time[idx_tmp] = 0;
                 } else {
-                    // Pas assez attendu, remettre dans la même file
                     add_to_queue(queues[p], tmp);
                 }
             }
@@ -133,7 +115,7 @@ ExecutedTask *get_multileveld_output(process *process_array, int process_count, 
         int idx = find_process_by_name(process_array, process_count, running.name);  
         if (idx < 0) continue;
 
-        int quantum = BASE_QUANTUM << lvl;  // 2, 4, 8, 16...
+        int quantum = BASE_QUANTUM << lvl;  
         int quantum_left = quantum;
         int slice_start = current_time;
 
@@ -205,7 +187,7 @@ ExecutedTask *multileveld_wrapper(process *proc, int proc_count, int *executed_c
 AlgorithmInfo* get_algorithm_info_plugin(void) {
     static AlgorithmInfo info = {
         .name = "MLFQ-DYN",
-        .display_name = "Multi-Level Feedback Queue (Dynamic priority)",
+        .display_name = "Multi-Level Feedback Queue ",
         .id = MULTILEVELD,
         .execute = multileveld_wrapper,
         .requires_quantum = false

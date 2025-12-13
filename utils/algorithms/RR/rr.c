@@ -5,9 +5,8 @@ ExecutedTask *get_round_robin_output(int quantum, process *process_array, int pr
     *tasks_size = 0;
     int current_time = get_earliest_time(process_array, process_array_size);
     int executed_size = 0;
-    int temp_q = 0;
     int in_queue_size = 0;
-    int min_index = 0;
+    
 
     process *in_queue = (process *)malloc(sizeof(process) * 100);
     if (in_queue == NULL)

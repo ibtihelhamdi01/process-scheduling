@@ -28,7 +28,7 @@ ExecutedTask *get_multilevel_static_output(process *process_array, int process_c
 
     sort_process_array_by_at(process_array, process_count);
 
-    ExecutedTask *tasks = malloc(sizeof(ExecutedTask) * 10000);
+    ExecutedTask *tasks = malloc(sizeof(ExecutedTask) * 3000);
     int current_time = get_earliest_time(process_array, process_count);
 
     int *remaining = malloc(sizeof(int) * process_count);
@@ -38,14 +38,8 @@ ExecutedTask *get_multilevel_static_output(process *process_array, int process_c
     int *added = calloc(process_count, sizeof(int));
 
     int finished = 0;
-    int iteration = 0;
-
     while (finished < process_count)
     {
-        iteration++;
-        if (iteration > 5000) {
-            break;
-        }
 
         for (int i = 0; i < process_count; i++) {
             if (!added[i] && process_array[i].arrived_at <= current_time) {

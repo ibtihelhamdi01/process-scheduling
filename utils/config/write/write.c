@@ -410,14 +410,14 @@ void generate_config_with_comments(const char* filename, options ops, char *max_
     fprintf(f, "    \"quantum\": %d,\n\n", ops.quantum);
     
     fprintf(f, "    // Maximum number of processes to generate\n");
-    fprintf(f, "    // Format: \"min-max\" (e.g., \"1-10\" for 1 to 10 processes)\n");
+    fprintf(f, "    // Format: \"min-max\n" );
     fprintf(f, "    \"max_proc\": \"%s\",\n\n", max_proc_range);
     
     fprintf(f, "    // Execution time (burst time) range\n");
     fprintf(f, "    // Each process gets a random execution time in this range\n");
     fprintf(f, "    \"max_exec\": \"%s\",\n\n", exec_range);
     
-    fprintf(f, "    // Priority range (1 = highest priority, 10 = lowest)\n");
+    fprintf(f, "    // Priority range \n");
     fprintf(f, "    \"max_priority\": \"%s\",\n\n", priority_range);
     
     fprintf(f, "    // Arrival time range\n");

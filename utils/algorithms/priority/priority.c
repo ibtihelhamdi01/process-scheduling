@@ -14,7 +14,7 @@ ExecutedTask *get_priority_output(process *process_array, int process_array_size
     ExecutedTask *executed_tasks = (ExecutedTask *)malloc(sizeof(ExecutedTask) * 100);
     int executed_size = 0;
 
-    process *executed = (process *)malloc(sizeof(process) * process_array_size);
+
     sort_process_array_by_at(process_array, process_array_size);
     while (executed_size < process_array_size)
     {

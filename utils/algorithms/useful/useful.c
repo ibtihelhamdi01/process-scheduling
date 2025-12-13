@@ -118,3 +118,18 @@ ExecutedTask* ensure_task_capacity(ExecutedTask *tasks, int *capacity, int curre
     }
     return tasks;
 }
+void enqueue_new_arrivals(proc_queue **queues, process *process_array,
+                          int process_count, int current_time,
+                          int *added, int *wait_time) {
+    if (queues == NULL || process_array == NULL || added == NULL || wait_time == NULL) {
+        return;
+    }
+    
+    for (int i = 0; i < process_count; ++i) {
+        if (!added[i] && process_array[i].arrived_at == current_time) {
+            add_to_queue(queues[process_array[i].priority], process_array[i]);
+            added[i] = 1;
+            wait_time[i] = 0;
+        }
+    }
+}

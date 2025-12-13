@@ -17,10 +17,10 @@ typedef struct Node {
 
 typedef struct {
     Node *front;
-    int size;  // <-- Compteur d’éléments
+    int size;  
 } priority_queue;
-int queue_size(priority_queue *pq);
 
+int queue_size(priority_queue *pq);
 priority_queue *init_priority_queue();
 void print_queue(priority_queue *pq, int current_time);
 void swap_exec_time(priority_queue *pq, process p);
@@ -32,5 +32,4 @@ void add_to_pr_queue_p(priority_queue *pq, process new_process);
 process remove_from_pr_queue_p(priority_queue *pq);
 int is_pr_queue_empty(priority_queue *pq);
 void free_priority_queue(priority_queue *pq);
-
 #endif
