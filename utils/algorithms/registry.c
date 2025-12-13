@@ -79,9 +79,12 @@ void scan_algorithms_directory(const char* directory_path) {
 void register_algorithms(void) {
     
     scan_algorithms_directory("./algorithms");
+    if (dynamic_algorithm_count == 0) {
+        scan_algorithms_directory("/usr/local/lib/algorithms");
+    }
     
     if (dynamic_algorithm_count == 0) {
-        printf("No algorithm plugins found in ./algorithms/\n");
+        printf("No algorithm plugins found \n");
         printf("Please build the algorithms with: make algorithms\n");
         use_dynamic_plugins = false;
     } else {
