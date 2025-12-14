@@ -38,7 +38,9 @@ cd process-scheduling
 ``` 
 Run the installation script:
 ```bash
-./install.sh
+make clean
+make
+sudo make install
 ```
 ## <u>Configuring & Running</u>
 Generate the configuration file
